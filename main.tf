@@ -1,25 +1,28 @@
+# crate backend tfstate
 terraform {
-  required_providers {
-    aws={
-        source = "hashicorp/aws"
-        version = "~> 5.0"
-
-    }
+  backend "s3" {
+    bucket = "shivani343"
+    key = "terraform.tfstate"
+    region = "ap-south-1"
+    dynamodb_table = "shivani343"
+    
   }
 }
-provider "aws" {
-    region= "ap-south-1"
-  
-
+#module for php server to call ec2
+module "php" {
+    source = "../modules/ec2"
+    depends_on = [ module.dbb]
+    ami= var.ami
+    instance_type = var.instance_type
+    environment = var.environment
+    keypair = var.keypair
+    subnet_id = var.subnet_id
+    mysg = var.mysg
 }
-
-resource "aws_instance" "terraform_instance" {
-    ami = "ami-0d03cb826412c6b0f"
-    instance_type = "t2.micro"
-
-    tags = {
-        Name= "terraform instance"
-        Dept= "prod"
-    }
-
+#module for db to call rds
+module "dbb" {
+  source = "../modules/rds"
+  db_name = var.db_name
+  db_username = var.db_username
+  db_password = var.db_password
 }
